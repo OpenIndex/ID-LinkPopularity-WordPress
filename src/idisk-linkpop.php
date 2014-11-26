@@ -10,45 +10,38 @@ License: GPL3
 Id: $Id$
 */
 
-add_filter('the_content', 'idisk_linkpop_post');
+// Register the [IDiskLinkpopularity] shortcode.
+// see http://codex.wordpress.org/Function_Reference/add_shortcode
+add_shortcode('IDiskLinkpopularity', 'idisk_linkpop_shortcode');
 
-function idisk_linkpop_post($post) {
-  if (!is_single() && !is_page()) {
-    return $post;
-  }
+/**
+ * Replace [IDiskLinkpopularity] shortcode with wrapped content.
+ * see http://codex.wordpress.org/Shortcode_API
+ * @param array $atts Attributes in the [IDiskLinkpopularity] shortcode.
+ * @return string Wrapped content.
+ */
+function idisk_linkpop_shortcode($atts) {
 
-  // Platzhalter suchen und ersetzen
-  $regex = '/\[\s?IDiskLinkpopularity\s*([^\]]*)\]/is';
-  return preg_replace_callback($regex, 'idisk_linkpop_post_callback', $post);
-}
+  // load attributes from the shortcode
+  $settings = shortcode_atts(array(
+    'id' => '0',
+    'type' => 'table_long',
+    'utf8' => '0',
+      ), $atts);
 
-function idisk_linkpop_post_callback($matches) {
-
-  // Konfiguration im Platzhalter ermitteln
-  //echo '<pre>'; print_r($matches); echo '</pre>';
-  $regex = '/\s?([^=]*)\s?="([^"]*)"/is';
-  $values = array();
-  preg_match_all($regex, $matches[1], $values);
-  //echo '<pre>'; print_r($values); echo '</pre>';
-  $settings = array();
-  foreach ($values[1] as $pos => $key) {
-    $key = strtolower(trim($key));
-    $settings[$key] = trim($values[2][$pos]);
-  }
-
-  // IDisk-Benutzer-ID ermitteln
+  // get idisk user id
   $id = (isset($settings['id'])) ? $settings['id'] : null;
   if (is_null($id)) {
     return idisk_linkpop_error('Keine IDisk-Benutzer-ID angegeben!');
   }
-  if (!is_numeric($id)) {
+  if (!is_numeric($id) || $id <= 0) {
     return idisk_linkpop_error('Ungültige IDisk-Benutzer-ID angegeben!');
   }
 
-  // Art der LP-Darstellung ermitteln
+  // get type of linkpopularity view (table_short / table_long)
   $type = (isset($settings['type'])) ? strtolower($settings['type']) : null;
 
-  // URL zur LP-Darstellung konstruieren
+  // build URL for the linkpopularity view
   $url = 'http://www.immobiliendiskussion.de/LP/' . $id;
   if ($type == 'table_short') {
     $url .= '/table_short';
@@ -57,7 +50,7 @@ function idisk_linkpop_post_callback($matches) {
     $url .= '/table_long';
   }
 
-  // Ausgabe erzeugen
+  // get and return the content for the URL
   $content = implode('', file($url));
   $utf8 = (isset($settings['utf8'])) ? strtolower($settings['utf8']) : null;
   return ($utf8 == '1' || $utf8 == 'true') ? utf8_encode($content) : $content;

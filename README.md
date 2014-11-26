@@ -10,6 +10,7 @@ Changelog
 
 ### 0.2
 
+-   Bugfix: Make use of the [WordPress Shortcode API](http://codex.wordpress.org/Shortcode_API) in order to fix a compatibility issue with WordPress 4.0.1.
 -   made some syntax fixes
 
 ### 0.1
