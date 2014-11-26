@@ -1,5 +1,5 @@
-IDisk-Linkpopularity for WordPress 0.2
-======================================
+IDisk-Linkpopularity for WordPress 0.3-SNAPSHOT
+===============================================
 
 This plugin integrates the Link Popularity of [ImmobilienDiskussion.de](http://www.immobilienDiskussion.de)
 into a WordPress blog.

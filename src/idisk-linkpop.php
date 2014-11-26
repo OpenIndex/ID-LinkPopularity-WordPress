@@ -3,7 +3,7 @@
 Plugin Name: IDisk-Link-Popularity
 Plugin URI: http://www.immobiliendiskussion.de/
 Description: Dieses Plugin integriert die Link-Popularity der ImmobilienDiskussion in WordPress.
-Version: 0.2
+Version: 0.3-SNAPSHOT
 Author: Andreas Rudolph, Walter Wagner (OpenIndex.de)
 Author URI: http://www.openindex.de/
 License: GPL3
