@@ -8,6 +8,10 @@ into a WordPress blog.
 Changelog
 ---------
 
+### 0.2
+
+-   made some syntax fixes
+
 ### 0.1
 
 -   First public release
