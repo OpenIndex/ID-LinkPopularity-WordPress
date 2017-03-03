@@ -1,14 +1,37 @@
 <?php
 /*
 Plugin Name: IDisk-Link-Popularity
-Plugin URI: http://www.immobiliendiskussion.de/
+Plugin URI: https://immobiliendiskussion.de/
 Description: Dieses Plugin integriert die Link-Popularity der ImmobilienDiskussion in WordPress.
-Version: 0.2
+Version: 0.3
 Author: Andreas Rudolph, Walter Wagner (OpenIndex.de)
 Author URI: http://www.openindex.de/
-License: GPL3
-Id: $Id$
+License: MIT
 */
+
+/**
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @author Andreas Rudolph <andy@openindex.de>
+ * @copyright 2006-2017 OpenIndex.de
+ * @license MIT
+ */
 
 // Register the [IDiskLinkpopularity] shortcode.
 // see http://codex.wordpress.org/Function_Reference/add_shortcode
@@ -24,31 +47,28 @@ function idisk_linkpop_shortcode($atts) {
 
   // load attributes from the shortcode
   $settings = shortcode_atts(array(
-    'id' => '0',
-    'type' => 'table_long',
-    'utf8' => '0',
-      ), $atts);
+    'key' => '',
+    'type' => 'html_detailed',
+    ), $atts);
 
-  // get idisk user id
-  $id = (isset($settings['id'])) ? $settings['id'] : null;
-  if (is_null($id)) {
-    return idisk_linkpop_error('Keine IDisk-Benutzer-ID angegeben!');
-  }
-  if (!is_numeric($id) || $id <= 0) {
-    return idisk_linkpop_error('Ungültige IDisk-Benutzer-ID angegeben!');
+  // get idisk link popularity key
+  $key = (isset($settings['key'])) ? $settings['key'] : null;
+  if (is_null($key)) {
+    return idisk_linkpop_error('Keine Kennung zur Link-Popularity angegeben!');
   }
 
-  // get type of linkpopularity view (table_short / table_long)
+  // get type of linkpopularity view (html_table / html_detailed)
   $type = (isset($settings['type'])) ? strtolower($settings['type']) : null;
 
   // build URL for the linkpopularity view
-  $url = 'http://www.immobiliendiskussion.de/LP/' . $id;
-  if ($type == 'table_short') {
-    $url .= '/table_short';
+  $url = 'http://immobiliendiskussion.de/linkpopularity';
+  if ($type == trim(strtolower('html_table'))) {
+    $url .= '/html_table';
   }
   else {
-    $url .= '/table_long';
+    $url .= '/html_detailed';
   }
+  $url .= '/' . $key;
 
   // get the content for the URL
   $content = idisk_linkpop_download($url);
@@ -56,9 +76,8 @@ function idisk_linkpop_shortcode($atts) {
     return idisk_linkpop_error('Link-Popularity konnte nicht abgerufen werden!');
   }
 
-  // convert and return the content
-  $utf8 = (isset($settings['utf8'])) ? strtolower($settings['utf8']) : null;
-  return ($utf8 == '1' || $utf8 == 'true') ? utf8_encode($content) : $content;
+  // return the content
+  return $content;
 }
 
 function idisk_linkpop_error($msg) {
