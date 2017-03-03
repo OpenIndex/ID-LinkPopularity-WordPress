@@ -47,31 +47,28 @@ function idisk_linkpop_shortcode($atts) {
 
   // load attributes from the shortcode
   $settings = shortcode_atts(array(
-    'id' => '0',
-    'type' => 'table_long',
-    'utf8' => '0',
-      ), $atts);
+    'key' => '',
+    'type' => 'html_detailed',
+    ), $atts);
 
-  // get idisk user id
-  $id = (isset($settings['id'])) ? $settings['id'] : null;
-  if (is_null($id)) {
-    return idisk_linkpop_error('Keine IDisk-Benutzer-ID angegeben!');
-  }
-  if (!is_numeric($id) || $id <= 0) {
-    return idisk_linkpop_error('Ungültige IDisk-Benutzer-ID angegeben!');
+  // get idisk link popularity key
+  $key = (isset($settings['key'])) ? $settings['key'] : null;
+  if (is_null($key)) {
+    return idisk_linkpop_error('Keine Kennung zur Link-Popularity angegeben!');
   }
 
-  // get type of linkpopularity view (table_short / table_long)
+  // get type of linkpopularity view (html_table / html_detailed)
   $type = (isset($settings['type'])) ? strtolower($settings['type']) : null;
 
   // build URL for the linkpopularity view
-  $url = 'http://www.immobiliendiskussion.de/LP/' . $id;
-  if ($type == 'table_short') {
-    $url .= '/table_short';
+  $url = 'http://immobiliendiskussion.de/linkpopularity';
+  if ($type == trim(strtolower('html_table'))) {
+    $url .= '/html_table';
   }
   else {
-    $url .= '/table_long';
+    $url .= '/html_detailed';
   }
+  $url .= '/' . $key;
 
   // get the content for the URL
   $content = idisk_linkpop_download($url);
@@ -79,9 +76,8 @@ function idisk_linkpop_shortcode($atts) {
     return idisk_linkpop_error('Link-Popularity konnte nicht abgerufen werden!');
   }
 
-  // convert and return the content
-  $utf8 = (isset($settings['utf8'])) ? strtolower($settings['utf8']) : null;
-  return ($utf8 == '1' || $utf8 == 'true') ? utf8_encode($content) : $content;
+  // return the content
+  return $content;
 }
 
 function idisk_linkpop_error($msg) {
