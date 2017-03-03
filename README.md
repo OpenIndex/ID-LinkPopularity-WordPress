@@ -27,7 +27,7 @@ Changelog
 ### 0.3
 
 -   Migrated to the less restrictive [MIT license](https://opensource.org/licenses/MIT).
--   Made some changes for the relaunch of ImmobilienDiskussion.de.
+-   Made some changes for the upcoming relaunch of ImmobilienDiskussion.de.
 -   Removed Netbeans project structure.
 -   **Notice:** Please consider, that the shortcode parameters has been changed
     with this update.
