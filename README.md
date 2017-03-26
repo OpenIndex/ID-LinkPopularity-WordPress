@@ -1,5 +1,5 @@
-ID-LinkPopularity-WordPress 0.4-SNAPSHOT
-========================================
+ID-LinkPopularity-WordPress 0.3.1
+=================================
 
 Dieses Repository enthält ein Plugin zur Einbindung der von
 [ImmobilienDiskussion.de](https://immobiliendiskussion.de) bereitgestellten
@@ -23,6 +23,10 @@ angepasst werden.
 
 Changelog
 ---------
+
+### 0.3.1
+
+-   Use https encrypted URL in order to download the link list.
 
 ### 0.3
 
