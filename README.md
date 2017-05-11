@@ -1,4 +1,4 @@
-ID-LinkPopularity-WordPress 0.3.1
+ID-LinkPopularity-WordPress 0.3.2
 =================================
 
 Dieses Repository enthält ein Plugin zur Einbindung der von
@@ -23,6 +23,12 @@ angepasst werden.
 
 Changelog
 ---------
+
+### 0.3.2
+
+-   Disable certificate checks on download, if it was explicitly configured by
+    the `nocert` parameter or if the PHP environment does not support SNI
+    ([Server Name Indication](https://en.wikipedia.org/wiki/Server_Name_Indication)).
 
 ### 0.3.1
 

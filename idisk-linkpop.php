@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: IDisk-Link-Popularity
-Plugin URI: https://immobiliendiskussion.de/
+Plugin URI: https://immobiliendiskussion.de/wiki/idisk-link-popularity-wordpress
 Description: Dieses Plugin integriert die Link-Popularity der ImmobilienDiskussion in WordPress.
-Version: 0.3.1
+Version: 0.3.2
 Author: Andreas Rudolph, Walter Wagner (OpenIndex.de)
 Author URI: http://www.openindex.de/
 License: MIT
@@ -49,6 +49,7 @@ function idisk_linkpop_shortcode($atts) {
   $settings = shortcode_atts(array(
     'key' => '',
     'type' => 'html_detailed',
+    'nocert' => 'false',
     ), $atts);
 
   // get idisk link popularity key
@@ -70,8 +71,12 @@ function idisk_linkpop_shortcode($atts) {
   }
   $url .= '/' . $key;
 
+  // explicitly disable certificate checks
+  $noCertificateCheck = (isset($settings['nocert'])) ? trim($settings['nocert']) : 'false';
+  $noCertificateCheck = $noCertificateCheck===true || $noCertificateCheck=='1' || strtolower($noCertificateCheck)=='true';
+
   // get the content for the URL
-  $content = idisk_linkpop_download($url);
+  $content = idisk_linkpop_download($url, $noCertificateCheck);
   if (!is_string($content) || strlen($content) < 1) {
     return idisk_linkpop_error('Link-Popularity konnte nicht abgerufen werden!');
   }
@@ -85,12 +90,26 @@ function idisk_linkpop_error($msg) {
       . '<strong>Fehler:</strong> ' . $msg . '</div>';
 }
 
-function idisk_linkpop_download($url) {
+function idisk_linkpop_download($url, $noCertificateCheck) {
 
   // load the content via file_get_contents,
   // if allow_url_fopen is enabled in the PHP runtime
   if (ini_get('allow_url_fopen')) {
-    return file_get_contents($url);
+    $context = null;
+
+    // disable certificate checks, if it was explicitly disabled
+    // or if PHP does not support SNI (Server Name Indication)
+    if ($noCertificateCheck || !defined('OPENSSL_TLSEXT_SERVER_NAME') || !OPENSSL_TLSEXT_SERVER_NAME) {
+      $opts = array(
+        'ssl'=>array(
+          'verify_peer' => false,
+          'verify_peer_name' => false,
+        )
+      );
+      $context = stream_context_create($opts);
+    }
+
+    return file_get_contents($url, false, $context);
   }
 
   // alternatively load the content via cURL,
@@ -99,7 +118,14 @@ function idisk_linkpop_download($url) {
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_HEADER, 0);
+    curl_setopt($curl, CURLOPT_HEADER, false);
+
+    // disable certificate checks, if it was explicitly disabled
+    if ($noCertificateCheck) {
+      curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+      curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+    }
+
     $content = curl_exec($curl);
     curl_close($curl);
     return $content;
