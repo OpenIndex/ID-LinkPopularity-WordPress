@@ -24,6 +24,12 @@ angepasst werden.
 Changelog
 ---------
 
+### 0.3.2
+
+-   Disable certificate checks on download, if it was explicitly configured by
+    the `nocert` parameter or if the PHP environment does not support SNI
+    ([Server Name Indication](https://en.wikipedia.org/wiki/Server_Name_Indication)).
+
 ### 0.3.1
 
 -   Use https encrypted URL in order to download the link list.
