@@ -94,7 +94,7 @@ function idisk_linkpop_download($url, $noCertificateCheck) {
 
   // load the content via file_get_contents,
   // if allow_url_fopen is enabled in the PHP runtime
-  if (ini_get('allow_url_fopen')) {
+  if (ini_get('allow_url_fopen')=='1' || ini_set('allow_url_fopen', '1')!==false) {
     $context = null;
 
     // disable certificate checks, if it was explicitly disabled
@@ -114,7 +114,7 @@ function idisk_linkpop_download($url, $noCertificateCheck) {
 
   // alternatively load the content via cURL,
   // if it is available in the PHP runtime
-  elseif (function_exists('curl_init')) {
+  else if (function_exists('curl_init')) {
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_URL, $url);
