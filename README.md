@@ -24,6 +24,11 @@ angepasst werden.
 Changelog
 ---------
 
+### 0.3.3
+
+-   Cache downloaded link list for 24 hours in order to improve page generation
+    time and fault tolerance.
+
 ### 0.3.2
 
 -   Disable certificate checks on download, if it was explicitly configured by
