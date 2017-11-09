@@ -1,4 +1,4 @@
-ID-LinkPopularity-WordPress 0.3.2
+ID-LinkPopularity-WordPress 0.3.3
 =================================
 
 Dieses Repository enthält ein Plugin zur Einbindung der von
@@ -23,6 +23,11 @@ angepasst werden.
 
 Changelog
 ---------
+
+### 0.3.3
+
+-   Cache downloaded link list for 24 hours in order to improve page generation
+    time and fault tolerance.
 
 ### 0.3.2
 

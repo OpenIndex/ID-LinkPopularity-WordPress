@@ -3,7 +3,7 @@
 Plugin Name: IDisk-Link-Popularity
 Plugin URI: https://immobiliendiskussion.de/wiki/idisk-link-popularity-wordpress
 Description: Dieses Plugin integriert die Link-Popularity der ImmobilienDiskussion in WordPress.
-Version: 0.3.2
+Version: 0.3.3
 Author: Andreas Rudolph, Walter Wagner (OpenIndex.de)
 Author URI: http://www.openindex.de/
 License: MIT
@@ -50,6 +50,7 @@ function idisk_linkpop_shortcode($atts) {
     'key' => '',
     'type' => 'html_detailed',
     'nocert' => 'false',
+    'tempdir' => '',
     ), $atts);
 
   // get idisk link popularity key
@@ -75,8 +76,11 @@ function idisk_linkpop_shortcode($atts) {
   $noCertificateCheck = (isset($settings['nocert'])) ? trim($settings['nocert']) : 'false';
   $noCertificateCheck = $noCertificateCheck===true || $noCertificateCheck=='1' || strtolower($noCertificateCheck)=='true';
 
+  // path to temporary directory
+  $tempDir = (isset($settings['tempdir'])) ? trim($settings['tempdir']) : '';
+
   // get the content for the URL
-  $content = idisk_linkpop_download($url, $noCertificateCheck);
+  $content = idisk_linkpop_download($url, $tempDir, $noCertificateCheck);
   if (!is_string($content) || strlen($content) < 1) {
     return idisk_linkpop_error('Link-Popularity konnte nicht abgerufen werden!');
   }
@@ -90,11 +94,45 @@ function idisk_linkpop_error($msg) {
       . '<strong>Fehler:</strong> ' . $msg . '</div>';
 }
 
-function idisk_linkpop_download($url, $noCertificateCheck) {
+function idisk_linkpop_download($url, $tempDir, $noCertificateCheck) {
+
+  // detect path to temporary directory
+  if ($tempDir=='') {
+    $tempDir = null;
+  }
+  if ($tempDir==null || !is_dir($tempDir) || !is_writable($tempDir)) {
+    $tempDir = ini_get('upload_tmp_dir');
+    if ($tempDir==='' || $tempDir===false) {
+      $tempDir = null;
+    }
+  }
+  if ($tempDir==null || !is_dir($tempDir) || !is_writable($tempDir)) {
+    $tempDir = sys_get_temp_dir();
+  }
+
+  // create path to temporary file
+  $tempFile = null;
+  if ($tempDir!=null && is_dir($tempDir) && is_writable($tempDir)) {
+    $tempFile = $tempDir . DIRECTORY_SEPARATOR . 'idisk-linkpop-' . md5( $url ) . '.txt';
+  }
+
+  // load content from temporary file
+  $tempContent = null;
+  if ($tempFile!=null && is_file($tempFile)) {
+    $tempContent = file_get_contents($tempFile);
+  }
+
+  // use content from temporary file, if its maximal age is not exceeded
+  $minAge = time() - 86400;
+  if ($tempFile!=null && is_file($tempFile) && filemtime($tempFile)>$minAge) {
+    return $tempContent;
+  }
+
+  $content = null;
 
   // load the content via file_get_contents,
   // if allow_url_fopen is enabled in the PHP runtime
-  if (ini_get('allow_url_fopen')) {
+  if (ini_get('allow_url_fopen')=='1' || ini_set('allow_url_fopen', '1')!==false) {
     $context = null;
 
     // disable certificate checks, if it was explicitly disabled
@@ -109,12 +147,12 @@ function idisk_linkpop_download($url, $noCertificateCheck) {
       $context = stream_context_create($opts);
     }
 
-    return file_get_contents($url, false, $context);
+    $content = file_get_contents($url, false, $context);
   }
 
   // alternatively load the content via cURL,
   // if it is available in the PHP runtime
-  elseif (function_exists('curl_init')) {
+  else if (function_exists('curl_init')) {
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_URL, $url);
@@ -128,11 +166,26 @@ function idisk_linkpop_download($url, $noCertificateCheck) {
 
     $content = curl_exec($curl);
     curl_close($curl);
-    return $content;
   }
 
   // return an error message, if the download is not possible
   else {
     return idisk_linkpop_error('Ihr Webspace unterstützt weder <strong>allow_url_fopen</strong> noch <strong>cURL</strong>!');
   }
+
+  if ($content===false || $content=='') {
+    $content = null;
+  }
+
+  // write downloaded content into the temporary file
+  if ($content!=null && $tempFile!=null) {
+    file_put_contents($tempFile, $content);
+  }
+
+  // use temporary content, in case the download failed
+  if ($content==null && $tempContent!=null) {
+    $content =& $tempContent;
+  }
+
+  return $content;
 }
